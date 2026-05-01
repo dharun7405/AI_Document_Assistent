@@ -1,0 +1,32 @@
+[project]
+name = "ai-document-assistent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "black>=26.3.1",
+    "certifi>=2026.4.22",
+    "fastapi>=0.136.1",
+    "firecrawl-py>=4.23.1",
+    "isort>=8.0.1",
+    "jinja2>=3.1.6",
+    "langchain-chroma>=1.1.0",
+    "langchain-community>=0.4.1",
+    "langchain-groq>=1.1.2",
+    "langchain-huggingface>=1.2.2",
+    "langchain-pinecone>=0.2.13",
+    "langchain-tavily>=0.2.18",
+    "langchainhub>=0.1.21",
+    "langsmith>=0.8.0",
+    "nltk>=3.9.4",
+    "pillow>=12.2.0",
+    "python-dotenv>=1.2.2",
+    "streamlit>=1.57.0",
+    "streamlit-chat>=0.1.1",
+    "tiktoken>=0.12.0",
+    "tqdm>=4.67.3",
+    "unstructured>=0.22.26",
+    "uvicorn>=0.46.0",
+]
