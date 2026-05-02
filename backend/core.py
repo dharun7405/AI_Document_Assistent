@@ -7,6 +7,7 @@ from langchain.messages import ToolMessage
 from langchain.tools import tool
 from langchain_pinecone import PineconeVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_ollama import ChatOllama
 
 load_dotenv()
 
@@ -29,11 +30,16 @@ vectorstore = PineconeVectorStore(
 #     model_provider="groq"
 # )
 
-# Production 
-model = init_chat_model(
-    "llama-3.3-70b-versatile",
-    model_provider="groq"
+model = ChatOllama(
+    model="qwen3:1.7b",
+    temperature=0
 )
+
+# Production 
+# model = init_chat_model(
+#     "llama-3.3-70b-versatile",
+#     model_provider="groq"
+# )
 
 
 @tool(response_format="content_and_artifact")
@@ -118,3 +124,6 @@ if __name__ == '__main__':
     result = run_llm(query="what are deep agents?")
     print(result)
     
+    # query = input("Enter your question: ")
+    # result = run_llm(query=query)
+    # print(result)
