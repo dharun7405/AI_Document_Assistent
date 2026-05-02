@@ -12,7 +12,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_tavily import TavilyCrawl, TavilyExtract, TavilyMap
 from langchain_huggingface import HuggingFaceEmbeddings
-
+from langchain_community.document_loaders import RecursiveUrlLoader
 
 from logger import (Colors, log_error, log_header, log_info, log_success,log_warning)
 
@@ -100,33 +100,46 @@ async def main():
     """Main async function to orchestrate the entire process."""
     log_header("DOCUMENTATION INGESTION PIPELINE")
 
-    log_info(
-        "🗺️  TavilyCrawl: Starting to crawl the documentation site",
-        Colors.PURPLE,
-    )
+
     
     # Crawl the documentation site
 
-    res = tavily_crawl.invoke(
-        {
-            "url": "https://python.langchain.com/",
-            "max_depth": 3,
-            "extract_depth": "advanced",
-        }
+    # res = tavily_map.invoke(
+    #     {
+    #         # "url": "https://python.langchain.com/",
+    #         "url": "https://docs.godotengine.org/en/latest/",
+    #         "max_depth": 3,
+    #         "extract_depth": "advanced",
+    #     }
+    # )
+
+    # # Convert Tavily crawl results to LangChain Document objects
+    # all_docs = []
+    # for tavily_crawl_result_item in res["results"]:
+    #     log_info(
+    #         f"TavilyCrawl: Successfully crawled {tavily_crawl_result_item['url']} from documentation site"
+    #     )
+    #     all_docs.append(
+    #         Document(
+    #             page_content=tavily_crawl_result_item["raw_content"],
+    #             metadata={"source": tavily_crawl_result_item["url"]},
+    #         )
+    #     )
+
+
+
+    log_info("🌐 Loading documentation via RecursiveUrlLoader")
+
+    loader = RecursiveUrlLoader(
+        url="https://python.langchain.com/",
+        max_depth=3,
+        timeout=30,              # ⬅️ increase timeout
+        continue_on_failure=True, # ⬅️ skip failed pages
     )
 
-    # Convert Tavily crawl results to LangChain Document objects
-    all_docs = []
-    for tavily_crawl_result_item in res["results"]:
-        log_info(
-            f"TavilyCrawl: Successfully crawled {tavily_crawl_result_item['url']} from documentation site"
-        )
-        all_docs.append(
-            Document(
-                page_content=tavily_crawl_result_item["raw_content"],
-                metadata={"source": tavily_crawl_result_item["url"]},
-            )
-        )
+    all_docs = loader.load()
+
+    log_success(f"Loaded {len(all_docs)} documents")
 
     # Split documents into chunks
     log_header("DOCUMENT CHUNKING PHASE")
@@ -141,7 +154,7 @@ async def main():
     )
 
     # Process documents asynchronously
-    await index_documents_async(splitted_docs, batch_size=500)
+    await index_documents_async(splitted_docs, batch_size=200)
 
     log_header("PIPELINE COMPLETE")
     log_success("🎉 Documentation ingestion pipeline finished successfully!")

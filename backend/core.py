@@ -11,23 +11,50 @@ from langchain_huggingface import HuggingFaceEmbeddings
 load_dotenv()
 
 # Initialize embeddings (same as ingestion.py)
-embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-base-en-v1.5")
-
+embeddings = HuggingFaceEmbeddings(
+    model_name="BAAI/bge-base-en-v1.5",
+    encode_kwargs={
+        "normalize_embeddings": True,
+    }
+)
 #Initialize vector store
 vectorstore = PineconeVectorStore(
     index_name=os.environ["INDEX_NAME"], embedding=embeddings
 )
 
 # Initialize chat model
-model = init_chat_model("llama-3.1-8b-instant", model_provider="groq")
+# Dev / testing
+# model = init_chat_model(
+#     "llama-3.1-8b-instant",
+#     model_provider="groq"
+# )
 
+# Production 
+model = init_chat_model(
+    "llama-3.3-70b-versatile",
+    model_provider="groq"
+)
 
 
 @tool(response_format="content_and_artifact")
 def retrieve_context(query: str):
     """Retrieve relevant documentation to help answer user queries."""
+
+
+
     # Retrieve top 4 most similar documents
-    retrieved_docs = vectorstore.as_retriever().invoke(query, k=4)
+
+    # retrieved_docs = vectorstore.as_retriever().invoke(query, k=4)
+    retriever = vectorstore.as_retriever(
+    search_kwargs={
+        "k": 4,
+        "score_threshold": 0.5   # tune this
+    }
+    )
+    retrieved_docs = retriever.invoke(query)
+
+
+
     
     # Serialize documents for the model
     serialized = "\n\n".join(
